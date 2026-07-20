@@ -45,9 +45,12 @@ function cu(x){ if(x===null||x===undefined) return '';
 function U(x){ return cu(x).toUpperCase(); }
 function fnum(x){ if(typeof x==='number'){ return String(x); }
   let s=cu(x); return /^\d+\.0$/.test(s)? s.slice(0,-2): s; }
-function lookup(item,color,size){
-  const keys=[item+'|'+color+'|'+size, item+'|'+color+'|', item+'||'+size, item+'||'];
-  for(const k of keys){ if(dsm[k]) return dsm[k]; }
+function lookup(item,color,sizes){
+  // uu tien khop mau + size chinh xac (thu tung ung vien size: ProductSize, RMSize)
+  for(const size of sizes){ if(size){ const k=item+'|'+color+'|'+size; if(dsm[k]) return dsm[k]; } }
+  { const k=item+'|'+color+'|'; if(dsm[k]) return dsm[k]; }        // chi mau
+  for(const size of sizes){ if(size){ const k=item+'||'+size; if(dsm[k]) return dsm[k]; } } // chi size
+  { const k=item+'||'; if(dsm[k]) return dsm[k]; }                 // chi code
   if(dsmByCode[item]) return [dsmByCode[item],'','','',0];
   return null;
 }
@@ -84,8 +87,8 @@ function convert(rows,fname){
     const oldItem=U(get(r,'OldItem'));
     if(!item && scax2scaf[oldItem]){ item=scax2scaf[oldItem]; nItem++; }
     const color=U(get(r,'ColorItem'));
-    const size=U(fnum(get(r,'ProductSize')));
-    const res=lookup(U(item),color,size);
+    const rmsize=U(fnum(get(r,'RMSize')));  // SKU cua RM -> khop theo RM size
+    const res=lookup(U(item),color,[rmsize]);
     let dsmc='',model='',sku='',artwork='',note='';
     if(res){
       dsmc=res[0]; const nCombo=res[4]||0;
